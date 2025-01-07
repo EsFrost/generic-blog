@@ -2,7 +2,10 @@
 <div class="flex gap-4 m-4">
   <a routerLink="/posts">Go to posts</a>
   <a routerLink="/post">Test post</a>
-  <a href="/">Go back</a>
+  <a *ngIf="showGoBackButton" (click)="goBack()" class="cursor-pointer"
+    >Go back</a
+  >
 </div>
 
 <router-outlet></router-outlet>
+<footer class="bg-gray-800 text-white p-4 mt-4">Static Footer</footer>
