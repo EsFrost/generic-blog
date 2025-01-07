@@ -1,4 +1,4 @@
-import { ApiService } from '../api/api.service';
+import { ApiService } from '../../api/api.service';
 import { Component, inject } from '@angular/core';
 import { AsyncPipe, JsonPipe } from '@angular/common';
 
@@ -10,5 +10,5 @@ import { AsyncPipe, JsonPipe } from '@angular/common';
 })
 export class PostsComponent {
   private apiService = inject(ApiService);
-  data$ = this.apiService.getData();
+  data$ = this.apiService.getAllPosts();
 }

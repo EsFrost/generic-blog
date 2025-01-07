@@ -9,8 +9,12 @@ export class ApiService {
   private http = inject(HttpClient);
   private apiUrl = 'http://localhost:3000';
 
-  getData(): Observable<any> {
+  getAllPosts(): Observable<any> {
     return this.http.get(`${this.apiUrl}/posts`);
+  }
+
+  getPostById(id: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/posts/${id}`);
   }
 
   //   createData(data: any): Observable<any> {
