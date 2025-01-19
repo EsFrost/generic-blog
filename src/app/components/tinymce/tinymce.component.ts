@@ -17,8 +17,8 @@ export class TinymceComponent {
       'undo redo | blocks | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | help',
     base_url: '/tinymce', // This should match your assets output path
     suffix: '.min',
-    height: 500,
-    menubar: true,
+    height: 300,
+    menubar: false,
     promotion: false,
     skin: 'oxide',
     content_css: 'default',
