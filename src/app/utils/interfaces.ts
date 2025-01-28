@@ -3,7 +3,7 @@ export interface LoginCredentials {
   password: string;
 }
 
-export interface Post {
+export interface PostInterface {
   id: string;
   title: string;
   content: string;
