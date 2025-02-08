@@ -1,8 +1,11 @@
 <div class="p-4">
   @for (post of data$ | async; track post.id) {
-  <div class="mb-4 p-4 border rounded-shadow">
+  <div
+    class="mb-4 p-4 border rounded-shadow cursor-pointer"
+    (click)="navigateToPost(post.id)"
+  >
     <h2 class="text-xl font-bold">{{ post.title }}</h2>
-    <p class="mt-2 text-gray-600">{{ post.content }}</p>
+    <p class="mt-2 text-gray-600">{{ getPreview(post.content) }}</p>
   </div>
   } @empty {
   <div class="text-center text-gray-500">No posts found...</div>

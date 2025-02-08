@@ -9,11 +9,16 @@ export const routes: Routes = [
     component: PostsComponent,
   },
   {
-    path: 'post',
+    path: 'post/:id',
     component: PostComponent,
   },
   {
     path: 'tinymce',
     component: TinymceComponent,
+  },
+  {
+    path: '',
+    redirectTo: 'posts',
+    pathMatch: 'full',
   },
 ];

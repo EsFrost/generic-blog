@@ -1,9 +1,15 @@
 <div class="p-4">
-  @if (data$ | async; as post) {
-  <div class="mb-4 p-4 border rounded-shadow">
+  @if (post$ | async; as post) {
+  <article class="mb-4 p-4 border rounded-shadow">
     <h2 class="text-xl font-bold">{{ post.title }}</h2>
-    <p class="mt-2 text-gray-600">{{ post.content }}</p>
-  </div>
+    <div class="text-gray-600 mb-2">
+      <time>{{ post.created_at | date : "medium" }}</time>
+    </div>
+    <p
+      class="prose max-w-none mt-8"
+      [innerHTML]="sanitizeContent(post.content)"
+    ></p>
+  </article>
   } @else {
   <div class="text-center text-gray-500">Oops, something went wrong...</div>
   }
