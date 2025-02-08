@@ -1,12 +1,14 @@
 <div class="p-4">
-  <div class="flex flex-col md:grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+  <div
+    class="flex flex-col items-center md:grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+  >
     @for (post of data$ | async; track post.id; let i = $index) {
     <div
       [ngClass]="getGridArea(i)"
-      class="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition-shadow duration-200"
+      class="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition-shadow duration-200 h-64"
       (click)="navigateToPost(post.id)"
     >
-      <div class="p-4">
+      <div class="p-4 flex flex-col justify-around h-full">
         <h2 class="text-xl font-bold">{{ post.title }}</h2>
         <div class="flex mt-2 gap-x-4 items-center">
           <img
