@@ -8,11 +8,12 @@ import {
 } from '@angular/router';
 import { AuthService } from './services/auth.service';
 import { inject } from '@angular/core';
+import { BackToTopComponent } from './components/back-to-the-top/back-to-the-top';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterLink, RouterOutlet, CommonModule],
+  imports: [RouterLink, RouterOutlet, CommonModule, BackToTopComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
 })
@@ -21,6 +22,7 @@ export class AppComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
   isAuthenticated$ = this.authService.isAuthenticated$;
+  year: number = new Date().getFullYear();
 
   constructor() {}
 
