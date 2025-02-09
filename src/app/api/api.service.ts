@@ -17,6 +17,15 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/posts/${id}`);
   }
 
+  editPost(
+    id: string,
+    data: { title: string; content: string }
+  ): Observable<any> {
+    return this.http.put(`${this.apiUrl}/posts/${id}`, data, {
+      withCredentials: true,
+    });
+  }
+
   deletePost(id: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/posts/${id}`, {
       withCredentials: true,

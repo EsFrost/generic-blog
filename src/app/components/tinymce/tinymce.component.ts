@@ -15,7 +15,7 @@ export class TinymceComponent {
     plugins: 'lists link image table code help wordcount',
     toolbar:
       'undo redo | blocks | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | help',
-    base_url: '/tinymce', // This should match your assets output path
+    base_url: '/tinymce', // This should match the assets output path
     suffix: '.min',
     height: 300,
     menubar: false,
