@@ -130,6 +130,8 @@ export class NewPostComponent {
       }
     }
 
+    console.log('finalImageUrl:', finalImageUrl);
+
     this.apiService
       .createPost({
         title: this.title,
