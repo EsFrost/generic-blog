@@ -1,0 +1,70 @@
+<div
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+>
+  <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold">Edit Category</h2>
+      <button
+        (click)="close()"
+        class="text-gray-500 hover:text-gray-700"
+        aria-label="Close dialog"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </button>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="space-y-4">
+      <div>
+        <label
+          for="categoryName"
+          class="block text-sm font-medium text-gray-700"
+          >Category Name</label
+        >
+        <input
+          type="text"
+          id="categoryName"
+          [(ngModel)]="categoryName"
+          name="categoryName"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          [class.border-red-500]="error"
+          placeholder="Enter category name"
+          [disabled]="isSubmitting"
+        />
+        @if (error) {
+        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+        }
+      </div>
+
+      <div class="flex justify-end space-x-3">
+        <button
+          type="button"
+          (click)="close()"
+          class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+          [disabled]="isSubmitting"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          [disabled]="isSubmitting"
+        >
+          {{ isSubmitting ? "Saving..." : "Save Changes" }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

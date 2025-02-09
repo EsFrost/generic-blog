@@ -8,6 +8,10 @@ interface PostData {
   image_url?: string;
 }
 
+interface CategoryData {
+  name: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -48,5 +52,47 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}/posts/upload`, formData, {
       withCredentials: true,
     });
+  }
+
+  getAllCategories(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/categories`);
+  }
+
+  createCategory(data: CategoryData): Observable<any> {
+    return this.http.post(`${this.apiUrl}/categories`, data, {
+      withCredentials: true,
+    });
+  }
+
+  updateCategory(id: string, data: CategoryData): Observable<any> {
+    return this.http.put(`${this.apiUrl}/categories/${id}`, data, {
+      withCredentials: true,
+    });
+  }
+
+  deleteCategory(id: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/categories/${id}`, {
+      withCredentials: true,
+    });
+  }
+
+  // Post-Category relationship methods
+  getPostCategories(postId: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/posts/${postId}/categories`);
+  }
+
+  addCategoryToPost(postId: string, categoryId: string): Observable<any> {
+    return this.http.post(
+      `${this.apiUrl}/posts/${postId}/categories/${categoryId}`,
+      {},
+      { withCredentials: true }
+    );
+  }
+
+  removeCategoryFromPost(postId: string, categoryId: string): Observable<any> {
+    return this.http.delete(
+      `${this.apiUrl}/posts/${postId}/categories/${categoryId}`,
+      { withCredentials: true }
+    );
   }
 }
