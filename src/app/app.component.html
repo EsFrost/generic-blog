@@ -1,13 +1,28 @@
 <div class="min-h-screen flex flex-col">
-  <nav class="bg-blue-500 text-white p-4">
+  <nav class="border-b-2 border-blue-500">
     <div class="container mx-auto flex justify-between items-center">
       <div class="text-xl font-bold">
-        <a routerLink="/" class="hover:text-blue-200">{{ title }}</a>
+        <a routerLink="/" class="hover:text-blue-500">
+          <img
+            src="assets/images/logo.png"
+            alt="Site's logo"
+            class="w-32 h-full"
+          />
+        </a>
       </div>
       <div class="flex gap-4">
         @if (isAuthenticated$ | async) {
-        <a routerLink="/dashboard" class="hover:text-blue-200">Dashboard</a>
-        <button (click)="logout()" class="hover:text-blue-200">Logout</button>
+        <a
+          routerLink="/dashboard"
+          class="text-blue-600 hover:text-black text-xl duration-300 transition-all"
+          >Dashboard</a
+        >
+        <button
+          (click)="logout()"
+          class="text-blue-600 hover:text-black text-xl duration-300 transition-all"
+        >
+          Logout
+        </button>
         } @else {
         <a routerLink="/login" class="hover:text-blue-200">Login</a>
         }
@@ -19,7 +34,7 @@
     <router-outlet></router-outlet>
   </main>
 
-  <footer class="bg-gray-800 text-white p-4">
+  <footer class="border-t-2 border-gray-800 py-5">
     <div class="container mx-auto text-center">
       Copyright &copy; {{ year }} -
       <a href="https://github.com/EsFrost" target="_blank">Sigmung Frost</a>
