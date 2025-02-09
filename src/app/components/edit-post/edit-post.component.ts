@@ -22,6 +22,8 @@ export class EditPostComponent implements OnInit {
   postId: string = '';
   title: string = '';
   content: string = '';
+  imageUrl: string = '';
+  imageError: boolean = false;
 
   tinymceInit: EditorComponent['init'] = {
     plugins: [
@@ -71,12 +73,23 @@ export class EditPostComponent implements OnInit {
       next: (post) => {
         this.title = post.title;
         this.content = post.content;
+        this.imageUrl = post.image_url || '';
+        this.imageError = false;
       },
       error: (error) => {
         console.error('Error loading post:', error);
         this.router.navigate(['/dashboard']);
       },
     });
+  }
+
+  clearImage() {
+    this.imageUrl = '';
+    this.imageError = false;
+  }
+
+  handleImageError() {
+    this.imageError = true;
   }
 
   savePost() {
@@ -86,7 +99,11 @@ export class EditPostComponent implements OnInit {
     }
 
     this.apiService
-      .editPost(this.postId, { title: this.title, content: this.content })
+      .editPost(this.postId, {
+        title: this.title,
+        content: this.content,
+        image_url: this.imageUrl,
+      })
       .subscribe({
         next: () => {
           this.router.navigate(['/dashboard']);

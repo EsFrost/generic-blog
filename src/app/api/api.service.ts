@@ -2,6 +2,12 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
+interface PostData {
+  title: string;
+  content: string;
+  image_url?: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -17,16 +23,13 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/posts/${id}`);
   }
 
-  createPost(data: { title: string; content: string }): Observable<any> {
+  createPost(data: PostData): Observable<any> {
     return this.http.post(`${this.apiUrl}/posts`, data, {
       withCredentials: true,
     });
   }
 
-  editPost(
-    id: string,
-    data: { title: string; content: string }
-  ): Observable<any> {
+  editPost(id: string, data: PostData): Observable<any> {
     return this.http.put(`${this.apiUrl}/posts/${id}`, data, {
       withCredentials: true,
     });

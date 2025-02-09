@@ -20,6 +20,8 @@ export class NewPostComponent {
 
   title: string = '';
   content: string = '';
+  imageUrl: string = '';
+  imageError: boolean = false;
 
   tinymceInit: EditorComponent['init'] = {
     plugins: [
@@ -57,6 +59,15 @@ export class NewPostComponent {
       'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; }',
   };
 
+  clearImage() {
+    this.imageUrl = '';
+    this.imageError = false;
+  }
+
+  handleImageError() {
+    this.imageError = true;
+  }
+
   savePost() {
     if (!this.title.trim() || !this.content.trim()) {
       alert('Please fill in both title and content');
@@ -64,7 +75,11 @@ export class NewPostComponent {
     }
 
     this.apiService
-      .createPost({ title: this.title, content: this.content })
+      .createPost({
+        title: this.title,
+        content: this.content,
+        image_url: this.imageUrl,
+      })
       .subscribe({
         next: () => {
           this.router.navigate(['/dashboard']);
