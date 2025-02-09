@@ -17,7 +17,9 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/posts/${id}`);
   }
 
-  //   createData(data: any): Observable<any> {
-  //     return this.http.post(`${this.apiUrl}/posts`, data);
-  //   }
+  deletePost(id: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/posts/${id}`, {
+      withCredentials: true,
+    });
+  }
 }
