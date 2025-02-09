@@ -6,6 +6,8 @@ import {
   NavigationEnd,
   Router,
 } from '@angular/router';
+import { AuthService } from './services/auth.service';
+import { inject } from '@angular/core';
 
 @Component({
   selector: 'app-root',
@@ -16,17 +18,20 @@ import {
 })
 export class AppComponent {
   title = 'generic-blog';
-  showGoBackButton = false;
+  private authService = inject(AuthService);
+  private router = inject(Router);
+  isAuthenticated$ = this.authService.isAuthenticated$;
 
-  constructor(private router: Router) {
-    this.router.events.subscribe((event) => {
-      if (event instanceof NavigationEnd) {
-        this.showGoBackButton = event.url !== '/';
-      }
+  constructor() {}
+
+  logout() {
+    this.authService.logout().subscribe({
+      next: () => {
+        this.router.navigate(['/']);
+      },
+      error: (err) => {
+        console.error('Logout failed:', err);
+      },
     });
-  }
-
-  goBack() {
-    this.router.navigate(['/']);
   }
 }
