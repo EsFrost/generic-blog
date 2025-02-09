@@ -5,6 +5,7 @@ import { LoginComponent } from './components/login/login.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { EditPostComponent } from './components/edit-post/edit-post.component';
 import { NewPostComponent } from './components/new-post/new-post.component';
+import { AuthGuard } from './auth.guard';
 
 export const routes: Routes = [
   {
@@ -22,14 +23,17 @@ export const routes: Routes = [
   {
     path: 'dashboard',
     component: DashboardComponent,
+    canActivate: [AuthGuard],
   },
   {
     path: 'posts/edit/:id',
     component: EditPostComponent,
+    canActivate: [AuthGuard],
   },
   {
     path: 'posts/new',
     component: NewPostComponent,
+    canActivate: [AuthGuard],
   },
   {
     path: '',

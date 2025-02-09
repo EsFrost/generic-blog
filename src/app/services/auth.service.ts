@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { Router } from '@angular/router';
+import { inject } from '@angular/core';
 
 @Injectable({
   providedIn: 'root',
@@ -8,6 +10,7 @@ import { BehaviorSubject, Observable, tap } from 'rxjs';
 export class AuthService {
   private apiUrl = 'http://localhost:3000';
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
+  private router = inject(Router);
   isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
   constructor(private http: HttpClient) {
@@ -42,6 +45,7 @@ export class AuthService {
         tap(() => {
           localStorage.removeItem('token');
           this.isAuthenticatedSubject.next(false);
+          this.router.navigate(['/login']);
         })
       );
   }
