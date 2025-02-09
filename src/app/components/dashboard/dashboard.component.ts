@@ -1,9 +1,7 @@
-// src/app/components/dashboard/dashboard.component.ts
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../api/api.service';
-import { PostInterface } from '../../utils/interfaces';
 
 @Component({
   selector: 'app-dashboard',
@@ -14,13 +12,13 @@ import { PostInterface } from '../../utils/interfaces';
 export class DashboardComponent {
   private apiService = inject(ApiService);
   posts$ = this.apiService.getAllPosts();
+  router: any;
 
   deletePost(id: string) {
     if (confirm('Are you sure you want to delete this post?')) {
       this.apiService.deletePost(id).subscribe({
         next: () => {
-          // Refresh the posts list
-          this.posts$ = this.apiService.getAllPosts();
+          this.router.navigate(['/dashboard']);
         },
         error: (error) => {
           console.error('Error deleting post:', error);
