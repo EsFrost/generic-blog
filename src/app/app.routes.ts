@@ -5,6 +5,7 @@ import { TinymceComponent } from './components/tinymce/tinymce.component';
 import { LoginComponent } from './components/login/login.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { EditPostComponent } from './components/edit-post/edit-post.component';
+import { NewPostComponent } from './components/new-post/new-post.component';
 
 export const routes: Routes = [
   {
@@ -30,6 +31,10 @@ export const routes: Routes = [
   {
     path: 'posts/edit/:id',
     component: EditPostComponent,
+  },
+  {
+    path: 'posts/new',
+    component: NewPostComponent,
   },
   {
     path: '',

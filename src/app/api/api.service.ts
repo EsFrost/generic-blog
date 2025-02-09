@@ -17,6 +17,12 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/posts/${id}`);
   }
 
+  createPost(data: { title: string; content: string }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/posts`, data, {
+      withCredentials: true,
+    });
+  }
+
   editPost(
     id: string,
     data: { title: string; content: string }
