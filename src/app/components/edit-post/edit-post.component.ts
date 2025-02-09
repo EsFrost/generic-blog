@@ -1,4 +1,10 @@
-import { Component, inject, OnInit } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnInit,
+  ViewChild,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -19,11 +25,16 @@ export class EditPostComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
+  @ViewChild('fileInput') fileInput!: ElementRef;
+
   postId: string = '';
   title: string = '';
   content: string = '';
   imageUrl: string = '';
   imageError: boolean = false;
+  imageMode: 'url' | 'upload' = 'url';
+  selectedFile: File | null = null;
+  previewUrl: string = '';
 
   tinymceInit: EditorComponent['init'] = {
     plugins: [
@@ -74,6 +85,7 @@ export class EditPostComponent implements OnInit {
         this.title = post.title;
         this.content = post.content;
         this.imageUrl = post.image_url || '';
+        this.updatePreviewUrl();
         this.imageError = false;
       },
       error: (error) => {
@@ -83,26 +95,77 @@ export class EditPostComponent implements OnInit {
     });
   }
 
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files?.length) {
+      this.selectedFile = input.files[0];
+      this.createImagePreview();
+    }
+  }
+
+  createImagePreview() {
+    if (this.selectedFile) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.previewUrl = reader.result as string;
+      };
+      reader.readAsDataURL(this.selectedFile);
+    }
+  }
+
+  updatePreviewUrl() {
+    if (this.imageMode === 'url') {
+      this.previewUrl = this.imageUrl;
+    } else if (this.selectedFile) {
+      this.createImagePreview();
+    }
+  }
+
   clearImage() {
     this.imageUrl = '';
+    this.previewUrl = '';
     this.imageError = false;
+  }
+
+  clearFile() {
+    this.selectedFile = null;
+    this.previewUrl = '';
+    if (this.fileInput) {
+      this.fileInput.nativeElement.value = '';
+    }
   }
 
   handleImageError() {
     this.imageError = true;
   }
 
-  savePost() {
+  async savePost() {
     if (!this.title.trim() || !this.content.trim()) {
       alert('Please fill in both title and content');
       return;
+    }
+
+    let finalImageUrl = this.imageUrl;
+
+    // If using file upload and a file is selected, handle the upload first
+    if (this.imageMode === 'upload' && this.selectedFile) {
+      try {
+        const uploadResponse = await this.apiService
+          .uploadImage(this.selectedFile)
+          .toPromise();
+        finalImageUrl = uploadResponse.path;
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        alert('Failed to upload image. Please try again.');
+        return;
+      }
     }
 
     this.apiService
       .editPost(this.postId, {
         title: this.title,
         content: this.content,
-        image_url: this.imageUrl,
+        image_url: finalImageUrl,
       })
       .subscribe({
         next: () => {

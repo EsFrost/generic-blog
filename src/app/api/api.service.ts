@@ -40,4 +40,13 @@ export class ApiService {
       withCredentials: true,
     });
   }
+
+  uploadImage(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    return this.http.post(`${this.apiUrl}/posts/upload`, formData, {
+      withCredentials: true,
+    });
+  }
 }
