@@ -1,0 +1,3 @@
+.postContent {
+  @apply prose; /* Tailwind typography */
+}
