@@ -13,7 +13,7 @@ export interface ImageFile {
 })
 export class ImageService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:3000/images';
+  private apiUrl = 'https://sigmafi-tech.website/genericapi/images';
 
   uploadImage(file: File): Observable<any> {
     const formData = new FormData();

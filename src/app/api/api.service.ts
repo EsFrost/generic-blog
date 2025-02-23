@@ -17,7 +17,7 @@ interface CategoryData {
 })
 export class ApiService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:3000';
+  private apiUrl = 'https://sigmafi-tech.website/genericapi';
 
   getAllPosts(): Observable<any> {
     return this.http.get(`${this.apiUrl}/posts`);
