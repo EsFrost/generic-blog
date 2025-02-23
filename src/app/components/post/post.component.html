@@ -1,16 +1,28 @@
 <div class="p-4">
   @if (post$ | async; as post) {
   <article class="mb-4 p-4 border rounded-shadow">
-    <h2 class="text-xl font-bold">{{ post.title }}</h2>
-    <div class="text-gray-600 mb-2">
+    <h2 class="text-xl font-bold mb-2">{{ post.title }}</h2>
+
+    <!-- Categories -->
+    <div class="flex flex-wrap gap-2 mb-4">
+      @for (category of post.categories; track category.id) {
+      <span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
+        {{ category.name }}
+      </span>
+      }
+    </div>
+
+    <div class="text-gray-600 mb-4">
       <time>{{ post.created_at | date : "medium" }}</time>
     </div>
 
+    @if (imageUrl) {
     <img
-      class="w-full h-auto object-cover rounded"
+      class="w-full h-auto object-cover rounded mb-8"
       [src]="imageUrl"
       [alt]="post.title"
     />
+    }
 
     <div
       class="prose max-w-none mt-8 postContent"

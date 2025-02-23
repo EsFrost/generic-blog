@@ -1,9 +1,20 @@
 import { ApiService } from '../../api/api.service';
 import { Component, inject } from '@angular/core';
 import { AsyncPipe, DatePipe } from '@angular/common';
-import { ActivatedRoute, Params } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { map, switchMap } from 'rxjs/operators';
 import { DomSanitizer, SafeHtml, SafeUrl } from '@angular/platform-browser';
+import { combineLatest } from 'rxjs';
+import { Category } from '../../utils/interfaces';
+
+interface Post {
+  id: string;
+  title: string;
+  content: string;
+  image_url?: string;
+  created_at: string;
+  categories?: Category[];
+}
 
 @Component({
   selector: 'app-post',
@@ -18,8 +29,20 @@ export class PostComponent {
   private sanitizer = inject(DomSanitizer);
 
   post$ = this.route.params.pipe(
-    map((params: Params) => params['id']),
-    switchMap((id: string) => this.apiService.getPostById(id))
+    map((params) => params['id']),
+    switchMap((id) =>
+      combineLatest({
+        post: this.apiService.getPostById(id),
+        categories: this.apiService.getPostCategories(id),
+      })
+    ),
+    map(
+      ({ post, categories }) =>
+        ({
+          ...post,
+          categories,
+        } as Post)
+    )
   );
 
   imageUrl: SafeUrl = '';

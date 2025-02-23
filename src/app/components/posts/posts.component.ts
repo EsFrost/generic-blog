@@ -9,7 +9,7 @@ import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-posts',
   standalone: true,
-  imports: [AsyncPipe, NgClass, NgIf, FormsModule],
+  imports: [AsyncPipe, NgClass, FormsModule],
   templateUrl: './posts.component.html',
 })
 export class PostsComponent implements OnInit {
