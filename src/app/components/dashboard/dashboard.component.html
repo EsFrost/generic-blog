@@ -1,5 +1,4 @@
 <div class="container mx-auto p-4">
-  <!-- Add New Post Button -->
   <!-- Notification -->
   @if (notification) {
   <div
@@ -9,7 +8,6 @@
     role="alert"
   >
     <div class="flex items-center text-white">
-      <!-- Success Icon -->
       @if (notification.type === 'success') {
       <svg
         class="w-6 h-6 mr-2"
@@ -22,11 +20,9 @@
           stroke-linejoin="round"
           stroke-width="2"
           d="M5 13l4 4L19 7"
-        ></path>
+        />
       </svg>
-      }
-      <!-- Error Icon -->
-      @if (notification.type === 'error') {
+      } @if (notification.type === 'error') {
       <svg
         class="w-6 h-6 mr-2"
         fill="none"
@@ -38,7 +34,7 @@
           stroke-linejoin="round"
           stroke-width="2"
           d="M6 18L18 6M6 6l12 12"
-        ></path>
+        />
       </svg>
       }
       <span class="text-white">{{ notification.message }}</span>
@@ -48,7 +44,6 @@
 
   <div class="flex justify-end mb-6 gap-x-4">
     <!-- View Toggle -->
-
     <div class="flex space-x-4">
       <button
         (click)="setActiveView('posts')"
@@ -68,30 +63,19 @@
       >
         Categories
       </button>
+      <button
+        (click)="setActiveView('images')"
+        class="px-4 py-2 rounded-lg transition-colors"
+        [class.bg-blue-500]="activeView === 'images'"
+        [class.text-white]="activeView === 'images'"
+        [class.bg-gray-100]="activeView !== 'images'"
+      >
+        Images
+      </button>
     </div>
 
-    @if (activeView === 'categories') {
-    <button
-      (click)="onCreateCategoryClick()"
-      class="inline-flex items-center justify-center p-4 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="h-6 w-6"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M12 4v16m8-8H4"
-        />
-      </svg>
-      <span class="ml-2">New Category</span>
-    </button>
-    } @if (activeView === 'posts') {
+    <!-- Action Buttons -->
+    @if (activeView === 'posts') {
     <a
       routerLink="/posts/new"
       class="inline-flex items-center justify-center p-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
@@ -112,19 +96,71 @@
       </svg>
       <span class="ml-2">New Post</span>
     </a>
+    } @if (activeView === 'categories') {
+    <button
+      (click)="onCreateCategoryClick()"
+      class="inline-flex items-center justify-center p-4 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-6 w-6"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M12 4v16m8-8H4"
+        />
+      </svg>
+      <span class="ml-2">New Category</span>
+    </button>
+    } @if (activeView === 'images') {
+    <label
+      class="inline-flex items-center justify-center p-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors cursor-pointer"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-6 w-6"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M12 4v16m8-8H4"
+        />
+      </svg>
+      <span class="ml-2">Upload Image</span>
+      <input
+        type="file"
+        (change)="onFileSelected($event)"
+        accept="image/*"
+        class="hidden"
+      />
+    </label>
     }
   </div>
 
+  <!-- Content Sections -->
   @if (activeView === 'posts') {
   <!-- Posts Grid -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
     @for (post of posts$ | async; track post.id) {
     <div class="bg-white rounded shadow p-4 relative hover:shadow-md">
-      <!-- Delete Button -->
-      <!-- Post Content -->
       <a [routerLink]="['/posts/edit', post.id]" class="block">
         <div class="flex gap-x-4 mb-4 justify-between items-center">
-          <img src="{{ post.image_url }}" alt="" class="w-20 h-20" />
+          @if (post.image_url) {
+          <img
+            [src]="post.image_url"
+            alt=""
+            class="w-20 h-20 object-cover rounded"
+          />
+          }
           <h2 class="text-lg font-bold mb-2 pr-6">{{ post.title }}</h2>
           <button
             (click)="deletePost(post.id)"
@@ -147,20 +183,18 @@
             </svg>
           </button>
         </div>
-
-        <p class="text-gray-600 text-sm mb-2">{{ post.content }}</p>
         <div class="text-xs text-gray-500">
           {{ post.created_at | date }}
         </div>
       </a>
     </div>
     } @empty {
-    <div class="text-center text-gray-500 py-8">
+    <div class="text-center text-gray-500 py-8 col-span-full">
       No posts found. Click the + button to create your first post.
     </div>
     }
   </div>
-  } @else {
+  } @if (activeView === 'categories') {
   <!-- Categories Grid -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
     @for (category of categories$ | async; track category.id) {
@@ -217,17 +251,78 @@
     </div>
     }
   </div>
+  } @if (activeView === 'images') {
+  <!-- Images Grid -->
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    @for (image of images; track image.name) {
+    <div class="relative group">
+      <img
+        [src]="image.url"
+        [alt]="image.name"
+        class="w-full h-48 object-cover rounded-lg shadow-md"
+      />
+      <div
+        class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-opacity flex items-center justify-center opacity-0 group-hover:opacity-100"
+      >
+        <button
+          (click)="copyImageUrl(image.url)"
+          class="mx-1 p-2 bg-white rounded-full hover:bg-gray-100"
+          title="Copy URL"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+            />
+          </svg>
+        </button>
+        <button
+          (click)="deleteImage(image.name)"
+          class="mx-1 p-2 bg-white rounded-full hover:bg-gray-100"
+          title="Delete"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5 text-red-600"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+    } @empty {
+    <div class="text-center text-gray-500 py-8 col-span-full">
+      No images uploaded yet. Click the Upload Image button to add some.
+    </div>
+    }
+  </div>
   }
-  <!-- Category Dialog -->
+
+  <!-- Dialogs -->
   @if (showCreateCategoryDialog) {
   <app-create-category-dialog
     (closeDialog)="handleCreateCategoryClose($event)"
   />
+  } @if (showEditCategoryDialog) {
+  <app-edit-category-dialog
+    [category]="selectedCategory"
+    (closeDialog)="handleEditCategoryClose($event)"
+  />
   }
 </div>
-@if (showEditCategoryDialog) {
-<app-edit-category-dialog
-  [category]="selectedCategory"
-  (closeDialog)="handleEditCategoryClose($event)"
-/>
-}
