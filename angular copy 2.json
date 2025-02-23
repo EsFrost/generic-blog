@@ -33,8 +33,7 @@
               }
             ],
             "styles": ["src/styles.css"],
-            "scripts": ["node_modules/tinymce/tinymce.min.js"],
-            "watch": true
+            "scripts": ["node_modules/tinymce/tinymce.min.js"]
           },
           "configurations": {
             "production": {
@@ -55,23 +54,25 @@
             "development": {
               "optimization": false,
               "extractLicenses": false,
-              "sourceMap": true,
-              "poll": 2000
+              "sourceMap": true
             }
           },
           "defaultConfiguration": "production"
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
-          "configurations": {
-            "production": {
-              "buildTarget": "generic-blog:build:production"
-            },
-            "development": {
-              "buildTarget": "generic-blog:build:development"
+          "options": {
+            "browserTarget": "generic-blog:build",
+            "watch": true,
+            "watchOptions": {
+              "ignored": [],
+              "followSymlinks": true,
+              "awaitWriteFinish": {
+                "stabilityThreshold": 2000,
+                "pollInterval": 100
+              }
             }
-          },
-          "defaultConfiguration": "development"
+          }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n"

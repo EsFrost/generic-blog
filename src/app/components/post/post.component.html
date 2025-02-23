@@ -5,13 +5,13 @@
     <div class="text-gray-600 mb-2">
       <time>{{ post.created_at | date : "medium" }}</time>
     </div>
-    @if (post.image_url) {
+
     <img
       class="w-full h-auto object-cover rounded"
-      [src]="post.image_url"
+      [src]="imageUrl"
       [alt]="post.title"
     />
-    }
+
     <div
       class="prose max-w-none mt-8 postContent"
       [innerHTML]="sanitizeContent(post.content)"

@@ -1,15 +1,11 @@
-import {
-  Component,
-  ElementRef,
-  OnInit,
-  ViewChild,
-  inject,
-} from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TINYMCE_SCRIPT_SRC, EditorComponent } from '@tinymce/tinymce-angular';
 import { ApiService } from '../../api/api.service';
+import { Category } from '../../utils/interfaces';
+import { forkJoin, Observable } from 'rxjs';
 
 @Component({
   selector: 'app-edit-post',
@@ -25,16 +21,14 @@ export class EditPostComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
-  @ViewChild('fileInput') fileInput!: ElementRef;
-
   postId: string = '';
   title: string = '';
   content: string = '';
   imageUrl: string = '';
   imageError: boolean = false;
-  imageMode: 'url' | 'upload' = 'url';
-  selectedFile: File | null = null;
   previewUrl: string = '';
+  categories: Category[] = [];
+  selectedCategoryIds: Set<string> = new Set<string>();
 
   tinymceInit: EditorComponent['init'] = {
     plugins: [
@@ -62,7 +56,7 @@ export class EditPostComponent implements OnInit {
       'bold italic forecolor | alignleft aligncenter ' +
       'alignright alignjustify | bullist numlist outdent indent | ' +
       'removeformat | help',
-    base_url: '/tinymce', // This should match the assets output path
+    base_url: '/tinymce',
     suffix: '.min',
     height: 500,
     menubar: false,
@@ -75,50 +69,41 @@ export class EditPostComponent implements OnInit {
   ngOnInit() {
     this.postId = this.route.snapshot.params['id'];
     if (this.postId) {
-      this.loadPost();
+      this.loadData();
     }
   }
 
-  private loadPost() {
-    this.apiService.getPostById(this.postId).subscribe({
-      next: (post) => {
-        this.title = post.title;
-        this.content = post.content;
-        this.imageUrl = post.image_url || '';
+  private loadData() {
+    // Load both post data and categories in parallel
+    forkJoin({
+      post: this.apiService.getPostById(this.postId),
+      categories: this.apiService.getAllCategories(),
+      postCategories: this.apiService.getPostCategories(this.postId),
+    }).subscribe({
+      next: (data) => {
+        // Set post data
+        this.title = data.post.title;
+        this.content = data.post.content;
+        this.imageUrl = data.post.image_url || '';
         this.updatePreviewUrl();
-        this.imageError = false;
+
+        // Set categories
+        this.categories = data.categories;
+
+        // Set selected categories
+        this.selectedCategoryIds = new Set(
+          data.postCategories.map((cat: Category) => cat.id)
+        );
       },
       error: (error) => {
-        console.error('Error loading post:', error);
+        console.error('Error loading data:', error);
         this.router.navigate(['/dashboard']);
       },
     });
   }
 
-  onFileSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (input.files?.length) {
-      this.selectedFile = input.files[0];
-      this.createImagePreview();
-    }
-  }
-
-  createImagePreview() {
-    if (this.selectedFile) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.previewUrl = reader.result as string;
-      };
-      reader.readAsDataURL(this.selectedFile);
-    }
-  }
-
   updatePreviewUrl() {
-    if (this.imageMode === 'url') {
-      this.previewUrl = this.imageUrl;
-    } else if (this.selectedFile) {
-      this.createImagePreview();
-    }
+    this.previewUrl = this.imageUrl;
   }
 
   clearImage() {
@@ -127,55 +112,103 @@ export class EditPostComponent implements OnInit {
     this.imageError = false;
   }
 
-  clearFile() {
-    this.selectedFile = null;
-    this.previewUrl = '';
-    if (this.fileInput) {
-      this.fileInput.nativeElement.value = '';
-    }
-  }
-
   handleImageError() {
     this.imageError = true;
   }
 
-  async savePost() {
+  onCategoryToggle(categoryId: string) {
+    if (this.selectedCategoryIds.has(categoryId)) {
+      this.selectedCategoryIds.delete(categoryId);
+    } else {
+      this.selectedCategoryIds.add(categoryId);
+    }
+  }
+
+  isCategorySelected(categoryId: string): boolean {
+    return this.selectedCategoryIds.has(categoryId);
+  }
+
+  savePost() {
     if (!this.title.trim() || !this.content.trim()) {
       alert('Please fill in both title and content');
       return;
     }
 
-    let finalImageUrl = this.imageUrl;
-
-    // If using file upload and a file is selected, handle the upload first
-    if (this.imageMode === 'upload' && this.selectedFile) {
-      try {
-        const uploadResponse = await this.apiService
-          .uploadImage(this.selectedFile)
-          .toPromise();
-        finalImageUrl = uploadResponse.path;
-      } catch (error) {
-        console.error('Error uploading image:', error);
-        alert('Failed to upload image. Please try again.');
-        return;
-      }
-    }
-
+    // First update the post details
     this.apiService
       .editPost(this.postId, {
         title: this.title,
         content: this.content,
-        image_url: finalImageUrl,
+        image_url: this.imageUrl,
       })
       .subscribe({
         next: () => {
-          this.router.navigate(['/dashboard']);
+          // After post is updated, handle categories
+          this.updateCategories();
         },
         error: (error) => {
           console.error('Error saving post:', error);
           alert('Failed to save post. Please try again.');
         },
       });
+  }
+
+  private updateCategories() {
+    // Get current categories for comparison
+    this.apiService.getPostCategories(this.postId).subscribe({
+      next: (currentCategories: Category[]) => {
+        const currentCategoryIds = new Set(
+          currentCategories.map((cat) => cat.id)
+        );
+        const selectedCategoryIds = this.selectedCategoryIds;
+
+        const categoriesToAdd = Array.from(selectedCategoryIds).filter(
+          (id) => !currentCategoryIds.has(id)
+        );
+        const categoriesToRemove = Array.from(currentCategoryIds).filter(
+          (id) => !selectedCategoryIds.has(id)
+        );
+
+        const operations: Array<any> = [];
+
+        // Add new categories
+        for (const categoryId of categoriesToAdd) {
+          operations.push(
+            this.apiService.addCategoryToPost(this.postId, categoryId)
+          );
+        }
+
+        // Remove unselected categories
+        for (const categoryId of categoriesToRemove) {
+          operations.push(
+            this.apiService.removeCategoryFromPost(this.postId, categoryId)
+          );
+        }
+
+        if (operations.length > 0) {
+          // Convert array of operations into an object for forkJoin
+          const operationsObj = operations.reduce((acc, operation, index) => {
+            acc[`operation${index}`] = operation;
+            return acc;
+          }, {} as { [key: string]: Observable<any> });
+
+          forkJoin(operationsObj).subscribe({
+            next: () => this.router.navigate(['/dashboard']),
+            error: (error) => {
+              console.error('Error updating categories:', error);
+              alert('Post saved but there was an error updating categories.');
+              this.router.navigate(['/dashboard']);
+            },
+          });
+        } else {
+          this.router.navigate(['/dashboard']);
+        }
+      },
+      error: (error) => {
+        console.error('Error getting current categories:', error);
+        this.router.navigate(['/dashboard']);
+      },
+    });
   }
 
   deletePost() {

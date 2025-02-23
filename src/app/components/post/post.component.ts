@@ -1,9 +1,9 @@
 import { ApiService } from '../../api/api.service';
-import { Component, inject, SecurityContext } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { AsyncPipe, DatePipe } from '@angular/common';
 import { ActivatedRoute, Params } from '@angular/router';
 import { map, switchMap } from 'rxjs/operators';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { DomSanitizer, SafeHtml, SafeUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-post',
@@ -21,6 +21,16 @@ export class PostComponent {
     map((params: Params) => params['id']),
     switchMap((id: string) => this.apiService.getPostById(id))
   );
+
+  imageUrl: SafeUrl = '';
+
+  ngOnInit() {
+    this.post$.subscribe((post) => {
+      if (post.image_url) {
+        this.imageUrl = this.sanitizer.bypassSecurityTrustUrl(post.image_url);
+      }
+    });
+  }
 
   sanitizeContent(content: string): SafeHtml {
     return this.sanitizer.bypassSecurityTrustHtml(content);

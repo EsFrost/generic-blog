@@ -1,1 +1,2 @@
 add categories in creating / editing posts
+remove upload image from edit and new. have a new component that exclusively uploads images and checks the urls after that. then copy the image url and use that in the url of edit or new.

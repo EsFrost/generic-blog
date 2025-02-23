@@ -1,0 +1,9 @@
+{
+  "/assets/uploads": {
+    "target": "http://localhost:3000",
+    "secure": false,
+    "pathRewrite": {
+      "^/assets/uploads": "/assets/uploads"
+    }
+  }
+}

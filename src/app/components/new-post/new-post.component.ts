@@ -1,9 +1,14 @@
-import { Component, ElementRef, ViewChild, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TINYMCE_SCRIPT_SRC, EditorComponent } from '@tinymce/tinymce-angular';
 import { ApiService } from '../../api/api.service';
+import { Category } from '../../utils/interfaces';
+import { TINYMCE_DEFAULT_CONFIG } from '../../utils/editor-config';
+import { Editor } from 'tinymce';
+
+declare const tinymce: any;
 
 @Component({
   selector: 'app-new-post',
@@ -14,98 +19,53 @@ import { ApiService } from '../../api/api.service';
   ],
   templateUrl: './new-post.component.html',
 })
-export class NewPostComponent {
+export class NewPostComponent implements OnInit, OnDestroy {
   private apiService = inject(ApiService);
   private router = inject(Router);
-
-  @ViewChild('fileInput') fileInput!: ElementRef;
+  private editorInstance: Editor | null = null;
 
   title: string = '';
   content: string = '';
   imageUrl: string = '';
   imageError: boolean = false;
-  imageMode: 'url' | 'upload' = 'url';
-  selectedFile: File | null = null;
   previewUrl: string = '';
+  categories: Category[] = [];
+  selectedCategoryIds: Set<string> = new Set<string>();
+  isSubmitting = false;
 
   tinymceInit: EditorComponent['init'] = {
-    plugins: [
-      'advlist',
-      'autolink',
-      'lists',
-      'link',
-      'image',
-      'charmap',
-      'preview',
-      'anchor',
-      'searchreplace',
-      'visualblocks',
-      'code',
-      'fullscreen',
-      'insertdatetime',
-      'media',
-      'table',
-      'code',
-      'help',
-      'wordcount',
-    ],
-    toolbar:
-      'undo redo | blocks | ' +
-      'bold italic forecolor | alignleft aligncenter ' +
-      'alignright alignjustify | bullist numlist outdent indent | ' +
-      'removeformat | help',
-    base_url: '/tinymce', // This should match the assets output path
-    suffix: '.min',
-    height: 500,
-    menubar: false,
-    promotion: false,
-    skin: 'oxide',
-    content_style:
-      'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; }',
+    ...TINYMCE_DEFAULT_CONFIG,
+    setup: (editor: Editor) => {
+      this.editorInstance = editor;
+      editor.on('init', () => {
+        const container = editor.getContainer();
+        if (container) {
+          container.style.transition = 'border-color 0.15s ease-in-out';
+        }
+      });
+    },
   };
 
-  onFileSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (input.files?.length) {
-      this.selectedFile = input.files[0];
-      this.createImagePreview();
+  ngOnInit() {
+    this.loadCategories();
+  }
+
+  ngOnDestroy() {
+    if (this.editorInstance) {
+      this.editorInstance.remove();
+      this.editorInstance = null;
     }
   }
 
-  createImagePreview() {
-    if (this.selectedFile) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.previewUrl = reader.result as string;
-      };
-      reader.readAsDataURL(this.selectedFile);
-    }
-  }
-
-  updatePreviewUrl() {
-    if (this.imageMode === 'url') {
-      this.previewUrl = this.imageUrl;
-    } else if (this.selectedFile) {
-      this.createImagePreview();
-    }
-  }
-
-  clearImage() {
-    this.imageUrl = '';
-    this.previewUrl = '';
-    this.imageError = false;
-  }
-
-  clearFile() {
-    this.selectedFile = null;
-    this.previewUrl = '';
-    if (this.fileInput) {
-      this.fileInput.nativeElement.value = '';
-    }
-  }
-
-  handleImageError() {
-    this.imageError = true;
+  loadCategories() {
+    this.apiService.getAllCategories().subscribe({
+      next: (categories) => {
+        this.categories = categories;
+      },
+      error: (error) => {
+        console.error('Error loading categories:', error);
+      },
+    });
   }
 
   async savePost() {
@@ -114,38 +74,68 @@ export class NewPostComponent {
       return;
     }
 
-    let finalImageUrl = this.imageUrl;
+    this.isSubmitting = true;
 
-    // If using file upload and a file is selected, handle the upload first
-    if (this.imageMode === 'upload' && this.selectedFile) {
+    try {
+      const response = await this.apiService
+        .createPost({
+          title: this.title,
+          content: this.content,
+          image_url: this.imageUrl,
+        })
+        .toPromise();
+
+      if (!response?.id) {
+        throw new Error('No post ID received');
+      }
+
+      await this.addCategoriesToPost(response.id);
+      this.router.navigate(['/dashboard']);
+    } catch (error) {
+      console.error('Error creating post:', error);
+      alert('Failed to create post. Please try again.');
+    } finally {
+      this.isSubmitting = false;
+    }
+  }
+
+  private async addCategoriesToPost(postId: string) {
+    if (this.selectedCategoryIds.size === 0) return;
+
+    const categoryIds = Array.from(this.selectedCategoryIds);
+
+    for (const categoryId of categoryIds) {
       try {
-        const uploadResponse = await this.apiService
-          .uploadImage(this.selectedFile)
-          .toPromise();
-        finalImageUrl = uploadResponse.path;
+        await this.apiService.addCategoryToPost(postId, categoryId).toPromise();
       } catch (error) {
-        console.error('Error uploading image:', error);
-        alert('Failed to upload image. Please try again.');
-        return;
+        console.error(`Error adding category ${categoryId}:`, error);
       }
     }
+  }
 
-    console.log('finalImageUrl:', finalImageUrl);
+  updatePreviewUrl() {
+    this.previewUrl = this.imageUrl;
+  }
 
-    this.apiService
-      .createPost({
-        title: this.title,
-        content: this.content,
-        image_url: finalImageUrl,
-      })
-      .subscribe({
-        next: () => {
-          this.router.navigate(['/dashboard']);
-        },
-        error: (error) => {
-          console.error('Error creating post:', error);
-          alert('Failed to create post. Please try again.');
-        },
-      });
+  clearImage() {
+    this.imageUrl = '';
+    this.previewUrl = '';
+    this.imageError = false;
+  }
+
+  handleImageError() {
+    this.imageError = true;
+  }
+
+  onCategoryToggle(categoryId: string) {
+    if (this.selectedCategoryIds.has(categoryId)) {
+      this.selectedCategoryIds.delete(categoryId);
+    } else {
+      this.selectedCategoryIds.add(categoryId);
+    }
+  }
+
+  isCategorySelected(categoryId: string): boolean {
+    return this.selectedCategoryIds.has(categoryId);
   }
 }
