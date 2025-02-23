@@ -8,7 +8,7 @@ import { inject } from '@angular/core';
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:3000';
+  private apiUrl = 'https://sigmafi-tech.website/genericapi';
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   private router = inject(Router);
   isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
