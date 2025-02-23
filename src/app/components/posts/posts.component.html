@@ -1,8 +1,27 @@
 <div class="p-4">
+  <!-- Category Filter Section -->
+  <div class="mb-8">
+    <h3 class="text-lg font-semibold mb-4">Filter by Categories:</h3>
+    <div class="flex flex-wrap gap-4">
+      @for (category of categories$ | async; track category.id) {
+      <label class="flex items-center space-x-2 cursor-pointer">
+        <input
+          type="checkbox"
+          [checked]="isCategorySelected(category.id)"
+          (change)="toggleCategory(category.id)"
+          class="form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+        />
+        <span class="text-gray-700">{{ category.name }}</span>
+      </label>
+      }
+    </div>
+  </div>
+
+  <!-- Posts Grid -->
   <div
     class="flex flex-col items-center md:grid md:grid-cols-2 lg:grid-cols-3 gap-8"
   >
-    @for (post of data$ | async; track post.id; let i = $index) {
+    @for (post of filteredPosts$ | async; track post.id; let i = $index) {
     <div
       [ngClass]="getGridArea(i)"
       class="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition-shadow duration-200 h-64"
@@ -11,20 +30,31 @@
       <div class="p-4 flex flex-col justify-around h-full">
         <h2 class="text-xl font-bold">{{ post.title }}</h2>
         <div class="flex mt-2 gap-x-4 items-center">
+          @if (post.image_url) {
           <img
-            *ngIf="post.image_url"
             [src]="post.image_url"
             alt=""
             class="min-w-20 h-20 rounded-md object-cover"
           />
+          }
           <p class="mt-2 text-gray-600 line-clamp-3">
             {{ getPreview(post.content) }}
           </p>
         </div>
+        <!-- Category Tags -->
+        <div class="flex flex-wrap gap-2 mt-2">
+          @for (category of post.categories; track category.id) {
+          <span
+            class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+          >
+            {{ category.name }}
+          </span>
+          }
+        </div>
       </div>
     </div>
     } @empty {
-    <div class="text-center text-gray-500">No posts found...</div>
+    <div class="text-center text-gray-500 col-span-full">No posts found...</div>
     }
   </div>
 </div>
