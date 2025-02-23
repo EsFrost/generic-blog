@@ -34,7 +34,7 @@
             ],
             "styles": ["src/styles.css"],
             "scripts": ["node_modules/tinymce/tinymce.min.js"],
-            "watch": true
+            "watch": false
           },
           "configurations": {
             "production": {
